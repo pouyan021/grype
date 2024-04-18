@@ -1,6 +1,10 @@
 package java
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"github.com/anchore/grype/grype/distro"
 	"github.com/anchore/grype/grype/pkg"
 	"github.com/anchore/grype/grype/version"
@@ -52,13 +56,22 @@ type mockMavenSearcher struct {
 	pkg pkg.Package
 }
 
-func (m mockMavenSearcher) GetMavenPackageBySha(string) (*pkg.Package, error) {
-	return &m.pkg, nil
+func (m mockMavenSearcher) GetMavenPackageBySha(ctx context.Context, sha1 string) (*pkg.Package, error) {
+	deadline, ok := ctx.Deadline()
+	fmt.Println("GetMavenPackageBySha called with deadline:", deadline, "deadline set:", ok)
+	// Sleep for a duration longer than the context's deadline
+	select {
+	case <-time.After(10 * time.Second):
+		return &m.pkg, nil
+	case <-ctx.Done():
+		// If the context is done before the sleep is over, return a context.DeadlineExceeded error
+		return nil, ctx.Err()
+	}
 }
 
 func newMockSearcher(pkg pkg.Package) MavenSearcher {
 	return mockMavenSearcher{
-		pkg,
+		pkg: pkg,
 	}
 }
 
