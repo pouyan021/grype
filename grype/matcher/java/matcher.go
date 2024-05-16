@@ -27,7 +27,7 @@ type Matcher struct {
 type ExternalSearchConfig struct {
 	SearchMavenUpstream bool
 	MavenBaseURL        string
-	AbortAfter          string
+	AbortAfter          time.Duration
 }
 
 type MatcherConfig struct {
@@ -56,12 +56,14 @@ func (m *Matcher) Type() match.MatcherType {
 func (m *Matcher) Match(store vulnerability.Provider, d *distro.Distro, p pkg.Package) ([]match.Match, error) {
 	var matches []match.Match
 	if m.cfg.SearchMavenUpstream {
-		timeout, err := time.ParseDuration(m.cfg.AbortAfter)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse timeout duration: %w", err)
+		timeout := m.cfg.AbortAfter
+		ctx := context.Background()
+		if timeout > 0 {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithTimeout(ctx, m.cfg.AbortAfter)
+			defer cancel()
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
+
 		upstreamMatches, err := m.matchUpstreamMavenPackages(ctx, store, d, p)
 		if err != nil {
 			log.Debugf("failed to match against upstream data for %s: %v", p.Name, err)
