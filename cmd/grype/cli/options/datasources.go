@@ -1,6 +1,7 @@
 package options
 
 import (
+	"github.com/anchore/clio"
 	"time"
 
 	"github.com/anchore/grype/grype/matcher/java"
@@ -16,6 +17,10 @@ type externalSources struct {
 	AbortAfter *time.Duration `yaml:"abort-after" json:"abortAfter" mapstructure:"abort-after"`
 	Maven      maven          `yaml:"maven" json:"maven" mapstructure:"maven"`
 }
+
+var _ interface {
+	clio.FieldDescriber
+} = (*externalSources)(nil)
 
 type maven struct {
 	SearchUpstreamBySha1 bool           `yaml:"search-upstream" json:"searchUpstreamBySha1" mapstructure:"search-maven-upstream"`
@@ -59,4 +64,10 @@ func multiLevelOption[T any](defaultValue T, option ...*T) *T {
 		}
 	}
 	return &result
+}
+
+func (cfg *externalSources) DescribeFields(descriptions clio.FieldDescriptionSet) {
+	descriptions.Add(&cfg.Enable, `enable Grype searching network source for additional information`)
+	descriptions.Add(&cfg.Maven.SearchUpstreamBySha1, `search for Maven artifacts by SHA1`)
+	descriptions.Add(&cfg.Maven.BaseURL, `base URL of the Maven repository to search`)
 }
