@@ -60,12 +60,10 @@ If you encounter an issue, please [let us know using the issue tracker](https://
 ```bash
 curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
 ```
-
-You can also choose another destination directory and release version for the installation. The destination directory doesn't need to be `/usr/local/bin`, it just needs to be a location found in the user's PATH and writable by the user that's installing Grype.
-
-```
-curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b <DESTINATION_DIR> <RELEASE_VERSION>
-```
+Install script options:
+-	`-b`: Specify a custom installation directory (defaults to `./bin`)
+-	`-d`: More verbose logging levels (`-d` for debug, `-dd` for trace)
+-	`-v`: Verify the signature of the downloaded artifact before installation (requires [`cosign`](https://github.com/sigstore/cosign) to be installed)
 
 ### Chocolatey
 
@@ -284,6 +282,7 @@ external-sources:
     search-upstream: true
     base-url: https://search.maven.org/solrsearch/select
     abort-after: 5m #override the global config
+
 ```
 
 You can also configure the base-url if you're using another registry as your maven endpoint.
@@ -538,7 +537,7 @@ With this information, Grype can select the correct database (the most recently 
 
 By default, the database is cached on the local filesystem in the directory `$XDG_CACHE_HOME/grype/db/<SCHEMA-VERSION>/`. For example, on macOS, the database would be stored in `~/Library/Caches/grype/db/3/`. (For more information on XDG paths, refer to the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).)
 
-You can set the cache directory path using the environment variable `GRYPE_DB_CACHE_DIR`.
+You can set the cache directory path using the environment variable `GRYPE_DB_CACHE_DIR`. If setting that variable alone does not work, then the `TMPDIR` environment variable might also need to be set.
 
 #### Data staleness
 
@@ -732,7 +731,7 @@ external-sources:
   enable: false
   maven:
     search-upstream-by-sha1: true
-    base-url: https://search.maven.org/solrsearch/select
+    base-url: https://repo1.maven.org/maven2
 
 db:
   # check for database updates on execution
@@ -857,7 +856,8 @@ match:
     using-cpes: false
     # even if CPE matching is disabled, make an exception when scanning for "stdlib".
     always-use-cpe-for-stdlib: true
-    allow-main-module-pseudo-version-comparison: true
+    # allow main module pseudo versions, which may have only been "guessed at" by Syft, to be used in vulnerability matching
+    allow-main-module-pseudo-version-comparison: false
   stock:
     using-cpes: true
 ```
