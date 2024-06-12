@@ -279,8 +279,8 @@ external-sources:
   enable: true
   abort-after: 10m
   maven:
-    search-upstream: true
-    base-url: https://search.maven.org/solrsearch/select
+    search-upstream-by-sha1: true
+    base-url: https://repo1.maven.org/maven2
     abort-after: 5m #override the global config
 ```
 
@@ -730,7 +730,7 @@ external-sources:
   enable: false
   maven:
     search-upstream-by-sha1: true
-    base-url: https://search.maven.org/solrsearch/select
+    base-url: https://repo1.maven.org/maven2
 
 db:
   # check for database updates on execution
