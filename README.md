@@ -282,6 +282,7 @@ external-sources:
     search-upstream-by-sha1: true
     base-url: https://repo1.maven.org/maven2
     abort-after: 5m #override the global config
+
 ```
 
 You can also configure the base-url if you're using another registry as your maven endpoint.
